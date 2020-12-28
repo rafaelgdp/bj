@@ -34,41 +34,55 @@
         const spawnFrameNumber = 100
         let frameCounter = 0
         
-        setInterval(() => {
-            if (frameCounter % spawnFrameNumber == 0) {
-                let gradient = ctx.createLinearGradient(0, 0, c.width, 0)
-                gradient.addColorStop("0", getRandomColor())
-                gradient.addColorStop("0.5", getRandomColor())
-                gradient.addColorStop("1.0", getRandomColor())
-                let position = {
-                    x: Math.random() * c.width,
-                    y: Math.random() * c.height
+        const FRAMES_PER_SECOND = 120;
+        const FRAME_MIN_TIME = (1000/60) * (60 / FRAMES_PER_SECOND) - (1000/60) * 0.5;
+        var lastFrameTime = 0;
+
+        function update(time) {
+
+            if (time-lastFrameTime >= FRAME_MIN_TIME) {
+
+                    let delta = time - lastFrameTime;
+                    lastFrameTime = time;
+
+                    if (frameCounter % spawnFrameNumber == 0) {
+                    let gradient = ctx.createLinearGradient(0, 0, c.width, 0)
+                    gradient.addColorStop("0", getRandomColor())
+                    gradient.addColorStop("0.5", getRandomColor())
+                    gradient.addColorStop("1.0", getRandomColor())
+                    let position = {
+                        x: Math.random() * c.width / 2,
+                        y: Math.random() * c.height / 2
+                    }
+                    let velocity = {
+                        x: Math.random() * 0.2,
+                        y: Math.random() * 0.2
+                    }
+                    let novoBeijo = {
+                        gradient: gradient,
+                        position: position,
+                        velocity: velocity
+                    }
+                    beijos.push(novoBeijo)
                 }
-                let velocity = {
-                    x: Math.random() * 2.3,
-                    y: Math.random() * 2.3
-                }
-                let novoBeijo = {
-                    gradient: gradient,
-                    position: position,
-                    velocity: velocity
-                }
-                beijos.push(novoBeijo)
+
+                if (beijos.length > 100) beijos.shift()
+                ctx.clearRect(0, 0, c.width, c.height)
+                beijos.forEach((beijo) => {
+                    ctx.fillStyle = beijo.gradient
+                    ctx.fillText("Beijo, mainha!", beijo.position.x, beijo.position.y)
+                    beijo.position.x += beijo.velocity.x * delta
+                    beijo.position.y += beijo.velocity.y * delta
+                    if (beijo.position.y < 0) beijo.velocity.y *= -1
+                    if (beijo.position.x < 0) beijo.velocity.x *= -1
+                    if (beijo.position.x > c.width - 120.0) beijo.velocity.x *= -1
+                    if (beijo.position.y > c.height) beijo.velocity.y *= -1
+                })
+                frameCounter++
             }
-            if (beijos.length > 100) beijos.shift()
-            ctx.clearRect(0, 0, c.width, c.height)
-            beijos.forEach((beijo) => {
-                ctx.fillStyle = beijo.gradient
-                ctx.fillText("Beijo, mainha!", beijo.position.x, beijo.position.y)
-                beijo.position.x += beijo.velocity.x
-                beijo.position.y += beijo.velocity.y
-                if (beijo.position.y < 0) beijo.velocity.y *= -1
-                if (beijo.position.x < 0) beijo.velocity.x *= -1
-                if (beijo.position.x > c.width) beijo.velocity.x *= -1
-                if (beijo.position.y > c.height) beijo.velocity.y *= -1
-            })
-            frameCounter++
-        }, 15)
+            requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
     </script>
 </body>
 </html>
